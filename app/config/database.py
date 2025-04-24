@@ -168,8 +168,7 @@ def update(
         if entity_update_status == 0:
             return Error(
                 error_code=404,
-                error_message=f'{model.__tablename__[:-1]} not found'  # type: ignore
-                .capitalize(),
+                error_message=f'{model.__tablename__[:-1]} not found'.capitalize(),  # type: ignore
             )
 
         return None

@@ -16,7 +16,8 @@ dependencies = [
     "python-multipart (>=0.0.20,<0.0.21)",
     "google-auth (>=2.39.0,<3.0.0)",
     "google-api-python-client (>=2.167.0,<3.0.0)",
-    "google-auth-oauthlib (>=1.2.2,<2.0.0)"
+    "google-auth-oauthlib (>=1.2.2,<2.0.0)",
+    "alembic (>=1.15.2,<2.0.0)"
 ]
 
 
