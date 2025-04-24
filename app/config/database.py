@@ -1,15 +1,23 @@
 from functools import wraps
 from typing import Annotated, Any, Optional, Tuple, Type, TypeVar
+
 from fastapi import Depends
-from sqlalchemy import create_engine
 from psycopg2.errors import ForeignKeyViolation
+from sqlalchemy import create_engine, desc
 from sqlalchemy.exc import (
     DataError,
     IntegrityError,
     OperationalError,
     ProgrammingError,
 )
-from sqlalchemy.orm import Session, Query, declarative_base, registry, sessionmaker
+from sqlalchemy.orm import (
+    Query,
+    Session,
+    declarative_base,
+    registry,
+    sessionmaker,
+)
+from sqlalchemy.sql.functions import coalesce
 from starlette.requests import Request
 
 from app.config.settings import Settings
@@ -23,6 +31,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 table_registry = registry()
 
+
 def get_db(request: Request):
     db = request.state.db
 
@@ -31,9 +40,11 @@ def get_db(request: Request):
     finally:
         pass
 
+
 DbSession = Annotated[Session, Depends(get_db)]
 
-SqlAlchemyModel = TypeVar("SqlAlchemyModel")
+SqlAlchemyModel = TypeVar('SqlAlchemyModel')
+
 
 def create(
     session: Session, model: SqlAlchemyModel
@@ -124,7 +135,9 @@ def get_by_attribute(
     if entity is None:
         return None, Error(
             error_code=404,
-            error_message=f'{model.__tablename__[:-1]} not found'.capitalize(),  # type: ignore
+            error_message=(
+                f'{model.__tablename__[:-1]} not found'
+            ).capitalize(),  # type: ignore
         )
 
     return entity, None
@@ -155,7 +168,8 @@ def update(
         if entity_update_status == 0:
             return Error(
                 error_code=404,
-                error_message=f'{model.__tablename__[:-1]} not found'.capitalize(),  # type: ignore
+                error_message=f'{model.__tablename__[:-1]} not found'  # type: ignore
+                .capitalize(),
             )
 
         return None
@@ -252,7 +266,10 @@ def handle_db_error(
         if violated_unique_attrs:
             return Error(
                 error_code=409,
-                error_message=f"{model.__tablename__[:-1]} already exists with these values: {', '.join(violated_unique_attrs)}".capitalize(),  # type: ignore
+                error_message=(
+                    f'{model.__tablename__[:-1]} already exists with '
+                    f'these values: {", ".join(violated_unique_attrs)}'
+                ).capitalize(),  # type: ignore
             )
 
     if isinstance(exception, OperationalError):
