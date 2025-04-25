@@ -8,3 +8,5 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: str
     GOOGLE_SECRET_KEY: str
     GOOGLE_REDIRECT_URI: str
+    GOOGLE_DOMAIN: str
+    GOOGLE_FOLDER_NAME: str
