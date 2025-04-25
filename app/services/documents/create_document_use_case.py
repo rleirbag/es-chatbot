@@ -68,7 +68,7 @@ class CreateDocumentUseCase:
 
             permission = {
                 'type': 'domain',
-                'role': 'writer',
+                'role': 'reader',
                 'domain': Settings().GOOGLE_DOMAIN,
                 'allowFileDiscovery': True
             }
