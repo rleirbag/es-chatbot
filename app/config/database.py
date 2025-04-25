@@ -145,7 +145,7 @@ def get_by_attribute(
 
 def update(
     session: Session, model: Type[SqlAlchemyModel], id: int, **kwargs
-) -> Optional[Error]:
+) -> Tuple[None, Optional[Error]]:
     """
     Update a model instance in the database.
 
@@ -171,14 +171,14 @@ def update(
                 error_message=f'{model.__tablename__[:-1]} not found'.capitalize(),  # type: ignore
             )
 
-        return None
+        return None, None
     except IntegrityError as e:
         return None, handle_db_error(session, model, e)  # type: ignore
 
 
 def delete(
     session: Session, model: Type[SqlAlchemyModel], id: int
-) -> Optional[Error]:
+) -> Tuple[None, Optional[Error]]:
     """
     Delete a model instance from the database.
 
@@ -192,11 +192,11 @@ def delete(
     """
     entity, error = get_by_attribute(session, model, 'id', id)
     if error:
-        return error
+        return None, error
 
     session.delete(entity)
 
-    return None
+    return None, None
 
 
 def commit(func):
