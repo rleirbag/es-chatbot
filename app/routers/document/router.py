@@ -1,5 +1,6 @@
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, File, HTTPException, UploadFile
 
+from app.config.database import DbSession
 from app.services.documents.create_document_use_case import (
     CreateDocumentUseCase,
 )
@@ -7,6 +8,14 @@ from app.services.documents.create_document_use_case import (
 router = APIRouter()
 
 
-@router.post("/upload")
-async def upload_document(file: UploadFile = File(...)):
-    return await CreateDocumentUseCase.execute(file)
+@router.post('/upload')
+async def upload_document(db: DbSession, file: UploadFile = File(...)):
+    document, error = CreateDocumentUseCase.execute(db, file)
+
+    if error:
+        raise HTTPException(
+            detail=error.error_message,
+            status_code=error.error_code,
+        )
+
+    return document
