@@ -1,13 +1,14 @@
 import io
 import logging
 
-from fastapi import File, HTTPException, UploadFile
+from fastapi import File, HTTPException, UploadFile, status
 from googleapiclient.http import MediaIoBaseUpload
 from sqlalchemy.orm import Session
 
-from app.config.database import commit, create
+from app.config.database import commit, create, get_by_attribute
 from app.config.settings import Settings
 from app.models.document import Document
+from app.schemas.error import Error
 from app.utils.google_drive import authenticate_google_drive
 
 logger = logging.getLogger(__name__)
@@ -56,21 +57,28 @@ class CreateDocumentUseCase:
     @staticmethod
     @commit
     def execute(db: Session, file: UploadFile = File(...)):
-        try:
-            contents = file.file.read()
-            file_stream = io.BytesIO(contents)
+        contents = file.file.read()
+        file_stream = io.BytesIO(contents)
 
-            drive_service = authenticate_google_drive()
+        drive_service = authenticate_google_drive()
 
-            folder = get_or_create_folder(
-                drive_service, Settings().GOOGLE_FOLDER_NAME
+        folder = get_or_create_folder(
+            drive_service, Settings().GOOGLE_FOLDER_NAME
+        )
+
+        file_metadata = {
+            'name': file.filename,
+            'parents': [folder],
+        }
+
+        db_file, _ = get_by_attribute(db, Document, 'name', file.filename)
+        if db_file:
+            return None, Error(
+                error_code=status.HTTP_409_CONFLICT,
+                error_message=f'Arquivo com o nome {file.filename} já existe',
             )
 
-            file_metadata = {
-                'name': file.filename,
-                'parents': [folder],
-            }
-
+        try:
             media = MediaIoBaseUpload(
                 file_stream, mimetype=file.content_type, resumable=True
             )
