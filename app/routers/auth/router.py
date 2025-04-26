@@ -82,6 +82,7 @@ async def auth_google(code: str, db: DbSession):
     }
 
 
+# TODO: Implementar refresh token pelo usuário logado
 @router.post('/refresh')
 async def refresh_google_token(refresh_token):
     params = {
