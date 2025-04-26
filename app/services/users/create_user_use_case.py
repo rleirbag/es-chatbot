@@ -34,7 +34,7 @@ class CreateUserUseCase:
                         db,
                         User,
                         existent_user.id,
-                        refresh_token=user.refresh_token,
+                        **user_create.model_dump(),
                     )
 
                     logger.info(
