@@ -1,15 +1,19 @@
 import requests
-from fastapi import APIRouter, HTTPException, status
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    Security,
+    status,
+)
 from fastapi.responses import RedirectResponse
-from fastapi.security import HTTPBearer
 
 from app.config.database import DbSession
 from app.config.settings import Settings
 from app.schemas.user import UserCreate
 from app.services.users.create_user_use_case import CreateUserUseCase
+from app.utils.security import get_current_user
 
-router = APIRouter()
-oauth2_scheme = HTTPBearer()
+router = APIRouter(tags=['Auth'])
 
 
 @router.get('/login')
@@ -96,3 +100,8 @@ async def refresh_google_token(refresh_token):
         return tokens
     else:
         return None
+
+
+@router.get('/protected')
+async def protected_route(user_info: dict = Security(get_current_user)):
+    return {'user_info': user_info}

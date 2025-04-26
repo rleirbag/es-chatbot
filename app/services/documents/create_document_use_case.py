@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.config.database import commit, create, get_by_attribute
 from app.config.settings import Settings
 from app.models.document import Document
+from app.models.user import User
 from app.schemas.error import Error
 from app.utils.google_drive import authenticate_google_drive
 
@@ -56,22 +57,27 @@ def get_or_create_folder(drive_service, folder_name):
 class CreateDocumentUseCase:
     @staticmethod
     @commit
-    def execute(db: Session, file: UploadFile = File(...)):
+    def execute(
+        db: Session,
+        user_email: str,
+        file: UploadFile = File(...),
+    ):
         contents = file.file.read()
         file_stream = io.BytesIO(contents)
 
         drive_service = authenticate_google_drive()
 
-        folder = get_or_create_folder(
-            drive_service, Settings().GOOGLE_FOLDER_NAME
-        )
-
         file_metadata = {
             'name': file.filename,
-            'parents': [folder],
+            'parents': [
+                get_or_create_folder(
+                    drive_service, Settings().GOOGLE_FOLDER_NAME
+                )
+            ],
         }
 
         db_file, _ = get_by_attribute(db, Document, 'name', file.filename)
+
         if db_file:
             return None, Error(
                 error_code=status.HTTP_409_CONFLICT,
@@ -119,13 +125,19 @@ class CreateDocumentUseCase:
             logger.error(f'Erro ao criar documento no Google Drive: {str(e)}')
             raise HTTPException(status_code=500, detail=str(e))
 
-        # TODO: Adicionar o ID do usuário que fez o upload
+        user, error = get_by_attribute(db, User, 'email', user_email)
+
+        if error:
+            return None, error
+
+        assert user
+
         document = Document(
             name=file.filename,
             shared_link=share_link['webViewLink'],
             g_file_id=file_id,
-            g_folder_id=folder,
-            user_id=13,
+            g_folder_id=file_metadata['parents'][0],
+            user_id=user.id,
         )
         document_db, error = create(db, document)
 
