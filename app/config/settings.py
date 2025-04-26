@@ -13,3 +13,10 @@ class Settings(BaseSettings):
     GOOGLE_REDIRECT_URI: str
     GOOGLE_DOMAIN: str
     GOOGLE_FOLDER_NAME: str
+    LLM_PROVIDER: str
+    LLM_SYSTEM_PROMPT: str
+    ANTHROPIC_API_KEY: str
+    ANTHROPIC_MODEL: str
+    OLLAMA_API_URL: str
+    OLLAMA_MODEL: str
+    OLLAMA_TIMEOUT: int
