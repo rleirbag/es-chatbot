@@ -2,11 +2,9 @@
 name = "chatbot-api"
 version = "0.1.0"
 description = ""
-authors = [
-    {name = "Gabriel Lima",email = "grtl@ecomp.poli.br"}
-]
-readme = "README.md"
+authors = [{ name = "Gabriel Lima", email = "grtl@ecomp.poli.br" }]
 requires-python = ">=3.13, <4.0"
+readme = "README.md"
 dependencies = [
     "fastapi[standard] (>=0.115.12,<0.116.0)",
     "sqlalchemy (>=2.0.40,<3.0.0)",
@@ -22,16 +20,20 @@ dependencies = [
     "ollama (>=0.4.8,<0.5.0)",
 ]
 
-
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.5"
-pytest-cov = "^6.1.1"
-taskipy = "^1.14.1"
-ruff = "^0.11.6"
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5,<9",
+    "pytest-cov>=6.1.1,<7",
+    "taskipy>=1.14.1,<2",
+    "ruff>=0.11.6,<0.12",
+]
 
 [tool.ruff]
 line-length = 79

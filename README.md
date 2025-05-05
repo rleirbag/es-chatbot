@@ -5,23 +5,23 @@ API desenvolvida com FastAPI para um chatbot.
 ## Pré-requisitos
 
 - Python 3.13 ou superior
-- pip (gerenciador de pacotes Python)
+- [uv](https://github.com/astral-sh/uv) (gerenciador de dependências e ambientes Python)
 
-## Instalação do Poetry
+## Instalação do uv
 
 ### macOS / Linux
 ```bash
-curl -sSL https://install.python-poetry.org | python3 -
+curl -Ls https://astral.sh/uv/install.sh | sh
 ```
 
 ### Windows (PowerShell)
 ```powershell
-(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+irm https://astral.sh/uv/install.ps1 | iex
 ```
 
 ### Verificando a instalação
 ```bash
-poetry --version
+uv --version
 ```
 
 ## Configuração do Projeto
@@ -32,26 +32,34 @@ git clone [URL_DO_REPOSITÓRIO]
 cd chatbot-api
 ```
 
-2. Instale as dependências usando o Poetry:
+2. Instale as dependências usando o uv:
 ```bash
-poetry install
+uv venv
+uv pip install -r <(uv pip compile pyproject.toml)
 ```
 
+> Recomenda-se usar `uv venv` para criar um ambiente virtual isolado automaticamente.
+
 3. Ative o ambiente virtual:
-```bash
-poetry shell
-```
+- **macOS/Linux:**
+  ```bash
+  source .venv/bin/activate
+  ```
+- **Windows:**
+  ```powershell
+  .venv\Scripts\Activate.ps1
+  ```
 
 ## Executando o Projeto
 
 1. Certifique-se de que o ambiente virtual está ativado:
 ```bash
-poetry shell
+source .venv/bin/activate # ou .venv\Scripts\Activate.ps1 no Windows
 ```
 
 2. Execute o servidor de desenvolvimento:
 ```bash
-uvicorn app.main:app --reload
+fastapi dev app/app.py
 ```
 
 O servidor estará disponível em `http://localhost:8000`
@@ -61,23 +69,6 @@ O servidor estará disponível em `http://localhost:8000`
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
 
-
-## Comandos Úteis
-
-- Instalar uma nova dependência:
-```bash
-poetry add [nome-do-pacote]
-```
-
-- Atualizar dependências:
-```bash
-poetry update
-```
-
-- Executar testes:
-```bash
-task test
-```
 
 ## Gerenciamento de Migrações com Alembic
 
