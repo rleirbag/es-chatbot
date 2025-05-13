@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import func
+from sqlalchemy import func, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.config.database import Base
@@ -9,7 +9,7 @@ from app.config.database import Base
 class User(Base):
     __tablename__ = 'users'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[str] = mapped_column(String, primary_key=True)
     name: Mapped[str] = mapped_column()
     email: Mapped[str] = mapped_column(unique=True)
     avatar_url: Mapped[str] = mapped_column()
@@ -21,4 +21,8 @@ class User(Base):
 
     documents = relationship(
         'Document', back_populates='user', cascade='all, delete-orphan'
+    )
+    
+    chat_histories = relationship(
+        'ChatHistory', back_populates='user', cascade='all, delete-orphan'
     )
