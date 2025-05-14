@@ -37,10 +37,6 @@ class CreateUserUseCase:
                         **user_create.model_dump(),
                     )
 
-                    logger.info(
-                        f'Usuário atualizado com novo refresh_token: {user_updated.__dict__}'
-                    )
-
                     if error:
                         logger.error(f'Erro ao atualizar usuário: {error}')
                         return None, error

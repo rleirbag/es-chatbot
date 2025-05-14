@@ -1,19 +1,22 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 
 from app.services.llm.llm_service import LLMService
 
 router = APIRouter(tags=['LLM'])
 
 
+class Prompt(BaseModel):
+    message: str
+
+
 @router.post('/generate')
-async def generate():
+async def generate(prompt: Prompt):
     try:
 
         async def generate():
-            for text_chunk in LLMService().execute(
-                'Qual é o seu nome? Me descreva sua origem.'
-            ):
+            for text_chunk in LLMService().execute(prompt.message):
                 yield text_chunk
             yield '\n'
 
