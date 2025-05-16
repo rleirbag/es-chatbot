@@ -15,8 +15,7 @@ class Document(Base):
     g_file_id: Mapped[str] = mapped_column(unique=True)
     g_folder_id: Mapped[str] = mapped_column(unique=False)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'))
     user = relationship('User', back_populates='documents')
 
     __table_args__ = (
