@@ -59,6 +59,7 @@ async def auth_google(code: str, db: DbSession):
     user_info = user_info.json()
 
     user = UserCreate(
+        id=user_info.get('sub'),
         name=user_info.get('name'),
         email=user_info.get('email'),
         refresh_token=token_data.get('refresh_token'),
