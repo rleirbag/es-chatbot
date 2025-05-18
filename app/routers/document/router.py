@@ -1,4 +1,11 @@
-from fastapi import APIRouter, File, HTTPException, Security, UploadFile
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    File,
+    HTTPException,
+    Security,
+    UploadFile,
+)
 
 from app.config.database import DbSession
 from app.schemas.document import DocumentResponse
@@ -19,11 +26,12 @@ router = APIRouter(tags=['Document'])
 )
 async def upload_document(
     db: DbSession,
+    bakcground_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     user_info: dict = Security(get_current_user),
 ):
     document, error = CreateDocumentUseCase.execute(
-        db, user_info['email'], file
+        db, user_info['email'], bakcground_tasks, file
     )
 
     if error:

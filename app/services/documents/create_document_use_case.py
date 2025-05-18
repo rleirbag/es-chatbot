@@ -1,7 +1,7 @@
 import io
 import logging
 
-from fastapi import File, HTTPException, UploadFile, status
+from fastapi import BackgroundTasks, File, HTTPException, UploadFile, status
 from googleapiclient.http import MediaIoBaseUpload
 from sqlalchemy.orm import Session
 
@@ -10,6 +10,7 @@ from app.config.settings import Settings
 from app.models.document import Document
 from app.models.user import User
 from app.schemas.error import Error
+from app.services.documents.document_service import DocumentProccessFactory
 from app.utils.google_drive import authenticate_google_drive
 
 logger = logging.getLogger(__name__)
@@ -60,6 +61,7 @@ class CreateDocumentUseCase:
     def execute(
         db: Session,
         user_email: str,
+        background_tasks: BackgroundTasks,
         file: UploadFile = File(...),
     ):
         contents = file.file.read()
@@ -83,6 +85,9 @@ class CreateDocumentUseCase:
                 error_code=status.HTTP_409_CONFLICT,
                 error_message=f'Arquivo com o nome {file.filename} já existe',
             )
+
+        document_proccess = DocumentProccessFactory.get_strategy(file)
+        background_tasks.add_task(document_proccess.execute, file=file)
 
         try:
             media = MediaIoBaseUpload(
