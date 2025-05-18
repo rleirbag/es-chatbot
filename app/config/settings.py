@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,8 +17,15 @@ class Settings(BaseSettings):
     GOOGLE_FOLDER_NAME: str
     LLM_PROVIDER: str
     LLM_SYSTEM_PROMPT: str
-    ANTHROPIC_API_KEY: str
-    ANTHROPIC_MODEL: str
+    ANTHROPIC_API_KEY: Optional[str]
+    ANTHROPIC_MODEL: Optional[str]
     OLLAMA_API_URL: str
     OLLAMA_MODEL: str
     OLLAMA_TIMEOUT: int
+    OPENAI_API_KEY: Optional[str]
+    RAG_CHUNK_SIZE: int
+    RAG_CHUNK_OVERLAP: int
+    BATCH_SIZE: int
+    CHROMA_HOST: str
+    CHROMA_PORT: int
+    CHROMA_COLLECTION: str
