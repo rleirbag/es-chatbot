@@ -1,6 +1,9 @@
-from functools import wraps
+from functools import lru_cache, wraps
 from typing import Annotated, Any, Optional, Tuple, Type, TypeVar
 
+import chromadb
+from chromadb.config import Settings as ChromaSettings
+from chromadb.utils import embedding_functions
 from fastapi import Depends
 from psycopg2.errors import ForeignKeyViolation
 from sqlalchemy import create_engine, desc
@@ -39,6 +42,29 @@ def get_db(request: Request):
         yield db
     finally:
         pass
+
+
+@lru_cache(maxsize=1)
+def get_chroma_db():
+    return chromadb.HttpClient(
+        host=Settings().CHROMA_HOST, port=Settings().CHROMA_PORT, ssl=True
+    )
+
+
+def get_chroma_collection(
+    collection_name: str = Settings().CHROMA_COLLECTION,
+    create_if_not_exists: bool = True,
+):
+    client = get_chroma_db()
+    try:
+        return client.get_collection(
+            name=collection_name,
+        )
+    except ValueError:
+        if create_if_not_exists:
+            return client.create_collection(name=collection_name)
+        else:
+            raise
 
 
 DbSession = Annotated[Session, Depends(get_db)]
