@@ -84,7 +84,7 @@ async def create_chat_history(
 
 @router.put("/{chat_history_id}", response_model=ChatHistory)
 async def update_chat_history(
-    chat_history_id: str,
+    chat_history_id: int,
     chat_history: ChatHistoryUpdate,
     user_info: dict = Security(get_current_user),
     db: Session = Depends(get_db)
@@ -92,76 +92,29 @@ async def update_chat_history(
     """
     Atualiza um registro do histórico de chat.
     """
-    user, error = get_by_attribute(db, User, 'email', user_info['email'])
-    if error or not user:
+    update_use_case = UpdateChatHistoryUseCase()
+    updated_chat, error = update_use_case.execute(db, chat_history_id, chat_history, user_info['email'])
+    if error:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Usuário não encontrado"
+            detail=error.error_message
         )
-    
-    get_use_case = GetChatHistoryUseCase()
-    existing_chat, error = get_use_case.execute(db, chat_history_id)
-    
-    if error:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(error)
-        )
-    
-    if existing_chat.user_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Acesso não autorizado a este registro"
-        )
-    
-    update_use_case = UpdateChatHistoryUseCase()
-    updated_chat, error = update_use_case.execute(db, chat_history_id, chat_history)
-    
-    if error:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(error)
-        )
-    
     return updated_chat
 
 
 @router.delete("/{chat_history_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_chat_history(
-    chat_history_id: str,
+    chat_history_id: int,
     user_info: dict = Security(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
     Remove um registro do histórico de chat.
     """
-    user, error = get_by_attribute(db, User, 'email', user_info['email'])
-    if error or not user:
+    delete_use_case = DeleteChatHistoryUseCase()
+    _, error = delete_use_case.execute(db, chat_history_id, user_info['email'])
+    if error:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Usuário não encontrado"
-        )
-    
-    get_use_case = GetChatHistoryUseCase()
-    existing_chat, error = get_use_case.execute(db, chat_history_id)
-    
-    if error:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(error)
-        )
-    
-    if existing_chat.user_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Acesso não autorizado a este registro"
-        )
-    
-    delete_use_case = DeleteChatHistoryUseCase()
-    _, error = delete_use_case.execute(db, chat_history_id)
-    
-    if error:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(error)
+            detail=error.error_message
         ) 
