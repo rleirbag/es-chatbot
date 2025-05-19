@@ -22,60 +22,32 @@ async def get_user_chat_history(
     """
     Retorna todo o histórico de chat do usuário autenticado.
     """
-    user, error = get_by_attribute(db, User, 'email', user_info['email'])
-    if error or not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Usuário não encontrado"
-        )
-    
     use_case = GetChatHistoryUseCase()
-    chat_histories, error = use_case.execute(db, user.id)
+    chat_histories, error = use_case.execute(db, user_info['email'])
     if error:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(error)
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=error.error_message
         )
     return chat_histories
 
 
 @router.get("/{chat_history_id}", response_model=ChatHistory)
 async def get_chat_history(
-    chat_history_id: str,
+    chat_history_id: int,
     user_info: dict = Security(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
     Retorna um registro específico do histórico de chat.
     """
-    user, error = get_by_attribute(db, User, 'email', user_info['email'])
-    if error or not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Usuário não encontrado"
-        )
-    
     use_case = GetChatHistoryUseCase()
-    chat_history, error = use_case.execute(db, chat_history_id)
-    
+    chat_history, error = use_case.get_by_id(db, chat_history_id, user_info['email'])
     if error:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(error)
-        )
-    
-    if not chat_history:
-        raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Registro de chat não encontrado"
+            detail=error.error_message
         )
-    
-    if chat_history.user_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Acesso não autorizado a este registro"
-        )
-    
     return chat_history
 
 
@@ -136,12 +108,6 @@ async def update_chat_history(
             detail=str(error)
         )
     
-    if not existing_chat:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Registro de chat não encontrado"
-        )
-    
     if existing_chat.user_id != user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -183,12 +149,6 @@ async def delete_chat_history(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(error)
-        )
-    
-    if not existing_chat:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Registro de chat não encontrado"
         )
     
     if existing_chat.user_id != user.id:

@@ -145,7 +145,7 @@ def get_by_attribute(
 
 def update(
     session: Session, model: Type[SqlAlchemyModel], id: int, **kwargs
-) -> Tuple[None, Optional[Error]]:
+) -> Tuple[Optional[SqlAlchemyModel], Optional[Error]]:
     """
     Update a model instance in the database.
 
@@ -156,22 +156,21 @@ def update(
         **kwargs: Updated values.
 
     Returns:
-        Error if any.
+        Tuple containing the updated model instance and an error if any.
     """
     try:
-        entity_update_status = (
-            session.query(model)
-            .filter(getattr(model, 'id') == id)
-            .update(kwargs)  # type: ignore
-        )
-
-        if entity_update_status == 0:
-            return Error(
+        entity = session.query(model).filter(getattr(model, 'id') == id).first()
+        if not entity:
+            return None, Error(
                 error_code=404,
                 error_message=f'{model.__tablename__[:-1]} not found'.capitalize(),  # type: ignore
             )
 
-        return None, None
+        for key, value in kwargs.items():
+            setattr(entity, key, value)
+
+        session.flush()
+        return entity, None
     except IntegrityError as e:
         return None, handle_db_error(session, model, e)  # type: ignore
 

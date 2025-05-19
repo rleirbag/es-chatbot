@@ -30,21 +30,33 @@ class CreateUserUseCase:
                 logger.info(f'Usuário já existe com email: {user.email}')
 
                 if existent_user.refresh_token != user.refresh_token:
+                    # Remove o ID do dicionário para evitar duplicação
+                    user_data = user_create.model_dump()
+                    user_data.pop('id', None)
+                    
+                    logger.info(f'Dados para atualização: {user_data}')
+                    
                     user_updated, error = update(
                         db,
                         User,
                         existent_user.id,
-                        **user_create.model_dump(),
-                    )
-
-                    logger.info(
-                        f'Usuário atualizado com novo refresh_token: {user_updated.__dict__}'
+                        **user_data,
                     )
 
                     if error:
                         logger.error(f'Erro ao atualizar usuário: {error}')
                         return None, error
 
+                    if not user_updated:
+                        logger.error('Usuário não foi atualizado')
+                        return None, Error(
+                            error_code=500,
+                            error_message='Erro ao atualizar usuário'
+                        )
+
+                    logger.info(
+                        f'Usuário atualizado com sucesso: {user_updated.__dict__}'
+                    )
                     return user_updated, None
 
                 return existent_user, None
@@ -55,6 +67,13 @@ class CreateUserUseCase:
             if error:
                 logger.error(f'Erro ao criar usuário: {error}')
                 return None, error
+
+            if not user:
+                logger.error('Usuário não foi criado')
+                return None, Error(
+                    error_code=500,
+                    error_message='Erro ao criar usuário'
+                )
 
             logger.info(f'Usuário criado com sucesso: {user.__dict__}')
             return user, None

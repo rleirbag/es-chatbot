@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class UserCreate(BaseModel):
-    id: str
+    id: int
     name: str
     email: str
     refresh_token: str

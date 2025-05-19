@@ -1,21 +1,39 @@
 from datetime import datetime
-from typing import Optional
-
-from pydantic import BaseModel
+from typing import Optional, Dict, Any
+from pydantic import BaseModel, Field
 
 
 class ChatHistoryBase(BaseModel):
-    question: str
-    answer: str
+    chat_messages: Dict[str, Any] = Field(
+        ...,
+        example={
+            "messages": [
+                {"role": "user", "content": "Oi ola"},
+                {"role": "assistant", "content": "opa"}
+            ]
+        }
+    )
 
 
 class ChatHistoryCreate(ChatHistoryBase):
-    user_id: str
+    user_id: int
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "chat_messages": {
+                    "messages": [
+                        {"role": "user", "content": "Oi ola"},
+                        {"role": "assistant", "content": "opa"}
+                    ]
+                }
+            }
+        }
 
 
 class ChatHistoryRead(ChatHistoryBase):
-    id: str
-    user_id: str
+    id: int
+    user_id: int
     created_at: datetime
 
     class Config:

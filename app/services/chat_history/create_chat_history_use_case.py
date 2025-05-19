@@ -22,7 +22,12 @@ class CreateChatHistoryUseCase:
                 f'Tentando criar histórico de chat para o usuário: {chat_history_create.user_id}'
             )
 
-            chat_history = ChatHistory(**chat_history_create.model_dump())
+            # Criar o objeto ChatHistory com os dados corretos
+            chat_history = ChatHistory(
+                user_id=chat_history_create.user_id,
+                chat_messages=chat_history_create.chat_messages
+            )
+
             logger.info(f'Histórico de chat criado: {chat_history.__dict__}')
 
             chat_history, error = create(db, chat_history)
