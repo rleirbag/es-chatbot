@@ -30,11 +30,15 @@ class CreateUserUseCase:
                 logger.info(f'Usuário já existe com email: {user.email}')
 
                 if existent_user.refresh_token != user.refresh_token:
+                    # Remove any 'id' field from user data to avoid conflict
+                    user_data = user_create.model_dump()
+                    user_data.pop('id', None)  # Remove 'id' if present
+                    
                     user_updated, error = update(
                         db,
                         User,
                         existent_user.id,
-                        **user_create.model_dump(),
+                        **user_data,
                     )
 
                     if error:

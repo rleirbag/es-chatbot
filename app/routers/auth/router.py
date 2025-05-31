@@ -82,6 +82,7 @@ async def auth_google(code: str, db: DbSession):
         'id_token': token_data.get('id_token'),
         'picture': user_info.get('picture', ''),
     }
+    print(json.dumps(user_credentials, indent=2))
 
     user_credentials_b64 = base64.b64encode(
         json.dumps(user_credentials).encode('utf-8')
