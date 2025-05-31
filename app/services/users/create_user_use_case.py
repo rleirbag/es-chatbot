@@ -40,7 +40,7 @@ class CreateUserUseCase:
                         db,
                         User,
                         existent_user.id,
-                        **user_data,
+                        **user_create.model_dump(),
                     )
 
                     if error:
