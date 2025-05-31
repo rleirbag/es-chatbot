@@ -60,7 +60,12 @@ async def auth_google(code: str, db: DbSession):
     )
     user_info = user_info.json()
 
+    # Gerar um ID numérico a partir do ID do Google
+    google_id = user_info.get('sub')
+    numeric_id = int(google_id[-9:])  # Pega os últimos 9 dígitos do ID do Google
+
     user = UserCreate(
+        id=str(numeric_id),  # Converte para string pois o schema espera string
         name=user_info.get('name'),
         email=user_info.get('email'),
         refresh_token=token_data.get('refresh_token'),
