@@ -30,18 +30,11 @@ class CreateUserUseCase:
                 logger.info(f'Usuário já existe com email: {user.email}')
 
                 if existent_user.refresh_token != user.refresh_token:
-<<<<<<< HEAD
-                    # Remove any 'id' field from user data to avoid conflict
-                    user_data = user_create.model_dump()
-                    user_data.pop('id', None)  # Remove 'id' if present
-=======
-                    # Remove o ID do dicionário para evitar duplicação
                     user_data = user_create.model_dump()
                     user_data.pop('id', None)
-                    
+
                     logger.info(f'Dados para atualização: {user_data}')
->>>>>>> 6837a5442d079d29666662137b015fe471e270e5
-                    
+
                     user_updated, error = update(
                         db,
                         User,
@@ -57,7 +50,7 @@ class CreateUserUseCase:
                         logger.error('Usuário não foi atualizado')
                         return None, Error(
                             error_code=500,
-                            error_message='Erro ao atualizar usuário'
+                            error_message='Erro ao atualizar usuário',
                         )
 
                     logger.info(
@@ -77,8 +70,7 @@ class CreateUserUseCase:
             if not user:
                 logger.error('Usuário não foi criado')
                 return None, Error(
-                    error_code=500,
-                    error_message='Erro ao criar usuário'
+                    error_code=500, error_message='Erro ao criar usuário'
                 )
 
             logger.info(f'Usuário criado com sucesso: {user.__dict__}')
