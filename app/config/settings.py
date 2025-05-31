@@ -20,3 +20,4 @@ class Settings(BaseSettings):
     OLLAMA_API_URL: str
     OLLAMA_MODEL: str
     OLLAMA_TIMEOUT: int
+    FRONTEND_URL: str = 'http://localhost:5173'
