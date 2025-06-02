@@ -1,13 +1,22 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 
 from app.config.database import SessionLocal
 from app.routers.auth.router import router as auth_router
+from app.routers.chat_history import router as chat_history_router
 from app.routers.document.router import router as document_router
 from app.routers.llm.router import router as llm_router
-from app.routers.chat_history import router as chat_history_router
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
 
 @app.middleware('http')
