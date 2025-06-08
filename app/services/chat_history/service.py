@@ -34,7 +34,9 @@ class ChatHistoryService:
         """
         return self.db.query(ChatHistory).filter(ChatHistory.user_id == user_id).all()
 
-    def create_chat_history(self, user_id: str, chat_history: ChatHistoryCreate) -> ChatHistory:
+    def create_chat_history(
+        self, user_id: int, chat_history: ChatHistoryCreate
+    ) -> ChatHistory:
         """
         Cria um novo registro no histórico de chat.
         
@@ -46,8 +48,7 @@ class ChatHistoryService:
             Registro criado
         """
         db_chat_history = ChatHistory(
-            **chat_history.model_dump(),
-            user_id=user_id
+            **chat_history.model_dump(), user_id=user_id
         )
         self.db.add(db_chat_history)
         self.db.commit()

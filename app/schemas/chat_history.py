@@ -16,24 +16,11 @@ class ChatHistoryBase(BaseModel):
 
 
 class ChatHistoryCreate(ChatHistoryBase):
-    user_id: int
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "chat_messages": {
-                    "messages": [
-                        {"role": "user", "content": "Oi ola"},
-                        {"role": "assistant", "content": "opa"}
-                    ]
-                }
-            }
-        }
+    pass
 
 
 class ChatHistoryRead(ChatHistoryBase):
     id: int
-    user_id: int
     created_at: datetime
 
     class Config:
@@ -48,7 +35,6 @@ class ChatHistoryUpdate(ChatHistoryBase):
 class ChatHistory(ChatHistoryBase):
     """Schema completo de ChatHistory com todos os campos."""
     id: int
-    user_id: int
     created_at: datetime
     updated_at: datetime | None = None
 
