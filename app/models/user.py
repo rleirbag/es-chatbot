@@ -1,9 +1,15 @@
+import enum
 from datetime import datetime
 
-from sqlalchemy import func, Integer
+from sqlalchemy import Enum as SQLAlchemyEnum, func, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.config.database import Base
+
+
+class UserRole(str, enum.Enum):
+    USER = "user"
+    ADMIN = "admin"
 
 
 class User(Base):
@@ -13,6 +19,12 @@ class User(Base):
     name: Mapped[str] = mapped_column()
     email: Mapped[str] = mapped_column(unique=True)
     avatar_url: Mapped[str] = mapped_column()
+    role: Mapped[UserRole] = mapped_column(
+        SQLAlchemyEnum(UserRole),
+        default=UserRole.USER,
+        server_default=UserRole.USER.value,
+        nullable=False,
+    )
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         onupdate=func.now(), nullable=True
