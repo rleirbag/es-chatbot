@@ -1,5 +1,6 @@
 import base64
 import json
+
 import requests
 from fastapi import (
     APIRouter,
@@ -60,12 +61,11 @@ async def auth_google(code: str, db: DbSession):
     )
     user_info = user_info.json()
 
-    # Gerar um ID numérico a partir do ID do Google
     google_id = user_info.get('sub')
-    numeric_id = int(google_id[-9:])  # Pega os últimos 9 dígitos do ID do Google
+    numeric_id = int(google_id[-9:])
 
     user = UserCreate(
-        id=str(numeric_id),  # Converte para string pois o schema espera string
+        id=numeric_id,
         name=user_info.get('name'),
         email=user_info.get('email'),
         refresh_token=token_data.get('refresh_token'),
