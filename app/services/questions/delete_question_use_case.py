@@ -1,7 +1,7 @@
 import logging
 from typing import Optional, Tuple
 
-from app.config.database import delete, get_by_id
+from app.config.database import delete, get_by_attribute
 from app.models.question import Question
 from app.schemas.error import Error
 from sqlalchemy.orm import Session
@@ -12,23 +12,21 @@ class DeleteQuestionUseCase:
     @staticmethod
     def execute(
         db: Session,
-        question_id: str
+        question_id: int,
+        user_email: str
     ) -> Tuple[Optional[bool], Optional[Error]]:
         try:
             logger.info(f'Tentando deletar dúvida com ID: {question_id}')
 
-            #verificando se a questao existe
-            existing_question = get_by_id(db, Question, question_id)
+            # Verificando se a questão existe
+            existing_question, error = get_by_attribute(db, Question, 'id', question_id)
 
-            if not existing_question:
-                logger.info(f'Dúvida nao encontrada: {question_id}')
-                return None, Error(
-                    error_code=404,
-                    error_message=f'Dúvida com ID {question_id} nao encontrada'
-                )
+            if error:
+                logger.info(f'Dúvida não encontrada: {question_id}')
+                return None, error
             
-            #deleta a questao
-            success, error = delete(db, existing_question)
+            # Deleta a questão
+            _, error = delete(db, Question, question_id)
 
             if error:
                 logger.error(f'Erro ao deletar dúvida: {error}')

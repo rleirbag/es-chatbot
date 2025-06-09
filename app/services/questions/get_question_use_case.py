@@ -1,29 +1,26 @@
 import logging
 from typing import Optional, Tuple
 
-from app.config.database import get_by_id
+from app.config.database import get_by_attribute
 from app.models.question import Question
 from app.schemas.error import Error
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
-class GetQuestonUseCase:
+class GetQuestionUseCase:
     @staticmethod
-    def execute (
-        db: Session, question_id: str
+    def execute(
+        db: Session, question_id: int, user_email: str
     ) -> Tuple[Optional[Question], Optional[Error]]:
         try: 
             logger.info(f'Tentando buscar dúvida com ID: {question_id}')
 
-            question = get_by_id(db, Question, question_id)
+            question, error = get_by_attribute(db, Question, 'id', question_id)
 
-            if not question:
-                logger.info(f'Dúvida nao encontrada: {question_id}')
-                return None, Error(
-                    error_code = 404,
-                    error_message=f'Dúvida com ID {question_id} nao encontrada'
-                )
+            if error:
+                logger.info(f'Dúvida não encontrada: {question_id}')
+                return None, error
             
             logger.info(f'Dúvida encontrada: {question.__dict__}')
             return question, None

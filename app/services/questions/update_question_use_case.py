@@ -1,9 +1,9 @@
 import logging
 from typing import Optional, Tuple
 
-from app.config.database import update, get_by_id
+from app.config.database import update, get_by_attribute
 from app.models.question import Question
-from app.schemas.question import QuestionUpdate
+from app.schemas.question import QuestionCreate
 from app.schemas.error import Error
 from sqlalchemy.orm import Session
 
@@ -13,28 +13,26 @@ class UpdateQuestionUseCase:
     @staticmethod
     def execute(
         db: Session,
-        question_id: str,
-        question_update: QuestionUpdate
+        question_id: int,
+        question_update: QuestionCreate,
+        user_email: str
     ) -> Tuple[Optional[Question], Optional[Error]]:
         try:
             logger.info(f'Tentando atualizar a dúvida com ID: {question_id}')
 
-            existing_question = get_by_id(db, Question, question_id)
+            existing_question, error = get_by_attribute(db, Question, 'id', question_id)
 
-            if not existing_question: 
-                logger.info(f'Dúvida nao encontrada: {question_id}')
-                return None, Error(
-                    error_code=404,
-                    error_message=f'Dúvida com ID {question_id} nao encontrada'
-                )
+            if error: 
+                logger.info(f'Dúvida não encontrada: {question_id}')
+                return None, error
             
-            #atualizando os campos
-            update_data = question_update.dict(exclude_unset = True)
+            # Atualizando os campos
+            update_data = question_update.dict(exclude_unset=True)
             for field, value in update_data.items():
                 setattr(existing_question, field, value)
 
-            #salva as alteracoes
-            updated_question, error = update(db, existing_question)
+            # Salva as alterações
+            updated_question, error = update(db, Question, question_id, **update_data)
 
             if error:
                 logger.error(f'Erro ao atualizar a dúvida: {error}')
