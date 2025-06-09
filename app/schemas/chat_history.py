@@ -4,7 +4,6 @@ from pydantic import BaseModel, Field
 
 
 class ChatHistoryBase(BaseModel):
-    user_id: Optional[int] = None
     chat_messages: Dict[str, Any] = Field(
         ...,
         example={
@@ -17,6 +16,7 @@ class ChatHistoryBase(BaseModel):
 
 
 class ChatHistoryCreate(ChatHistoryBase):
+    user_id: Optional[int] = None
     pass
 
 
@@ -28,17 +28,28 @@ class ChatHistoryRead(ChatHistoryBase):
         from_attributes = True
 
 
-class ChatHistoryUpdate(ChatHistoryBase):
+class ChatHistoryUpdate(BaseModel):
     """Schema para atualização de ChatHistory."""
-    pass
+
+    chat_messages: Dict[str, Any] = Field(
+        ...,
+        example={
+            "messages": [
+                {"role": "user", "content": "Oi ola"},
+                {"role": "assistant", "content": "opa"},
+            ]
+        },
+    )
 
 
 class ChatHistory(ChatHistoryBase):
     """Schema completo de ChatHistory com todos os campos."""
+
     id: int
     created_at: datetime
     updated_at: datetime | None = None
 
     class Config:
         """Configuração do Pydantic."""
+
         from_attributes = True  # Permite converter objetos SQLAlchemy para Pydantic 
