@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class ChatHistoryBase(BaseModel):
+    user_id: Optional[int] = None
     chat_messages: Dict[str, Any] = Field(
         ...,
         example={

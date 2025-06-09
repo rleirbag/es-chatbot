@@ -54,7 +54,8 @@ async def chat(
 
     if not history:
         chat_history_create = ChatHistoryCreate(
-            chat_messages={'messages': []}
+            chat_messages={'messages': []},
+            user_id=user_id
         )
         history = chat_history_service.create_chat_history(
             user_id=user_id, chat_history=chat_history_create
@@ -66,12 +67,10 @@ async def chat(
         else []
     )
 
-    # Converte o histórico para o formato de prompt
     prompt_messages = []
     for msg in chat_messages:
         prompt_messages.append({'role': msg['role'], 'content': msg['content']})
 
-    # Lógica para tratar o comando /desafio
     user_message = request.message
     llm_message = user_message
     if user_message.startswith('/desafio'):

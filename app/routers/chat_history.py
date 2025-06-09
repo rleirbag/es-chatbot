@@ -81,7 +81,6 @@ async def create_chat_history(
             detail='Usuário não encontrado',
         )
 
-    # Atualiza o user_id no chat_history
     chat_history.user_id = user.id
 
     use_case = CreateChatHistoryUseCase()
