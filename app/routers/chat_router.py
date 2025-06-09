@@ -71,9 +71,19 @@ async def chat(
     for msg in chat_messages:
         prompt_messages.append({'role': msg['role'], 'content': msg['content']})
 
+    # Lógica para tratar o comando /desafio
+    user_message = request.message
+    llm_message = user_message
+    if user_message.startswith('/desafio'):
+        topic = user_message.replace('/desafio', '').strip()
+        if topic:
+            llm_message = f'Crie um desafio sobre o seguinte tópico: {topic}'
+        else:
+            llm_message = 'Crie um desafio com base no contexto da nossa conversa até agora.'
+
     async def stream_response() -> AsyncGenerator[str, None]:
-        # Adiciona a nova mensagem do usuário ao prompt
-        prompt_messages.append({'role': 'user', 'content': request.message})
+        # Adiciona a nova mensagem do usuário (ou o prompt de desafio) ao prompt
+        prompt_messages.append({'role': 'user', 'content': llm_message})
 
         # Constrói o prompt final como uma string
         prompt_text = '\n'.join(
@@ -88,7 +98,7 @@ async def chat(
             llm_response_content += chunk
             yield chunk
 
-        # Atualiza o histórico com a pergunta e a resposta
+        # Atualiza o histórico com a pergunta original do usuário e a resposta
         chat_messages.append({'role': 'user', 'content': request.message})
         chat_messages.append(
             {'role': 'assistant', 'content': llm_response_content}
