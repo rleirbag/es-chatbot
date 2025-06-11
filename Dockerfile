@@ -1,4 +1,5 @@
 # --- Estágio 1: Builder ---
+# Usa uma imagem "slim" que é menor que a padrão.
 FROM python:3.13-slim as builder
 WORKDIR /app
 
@@ -8,18 +9,18 @@ RUN pip install uv
 # Copia os arquivos de metadados necessários para o build
 COPY pyproject.toml README.md ./
 
+# Instala a versão CPU-only do PyTorch para reduzir o tamanho
 RUN pip install torch --no-cache-dir --index-url https://download.pytorch.org/whl/cpu
-
-# 2. Instala o restante das dependências do projeto.
+# Instala o restante das dependências
 RUN uv pip install --system --no-cache .
-
-# 3. Limpa o cache do pip para garantir uma imagem final menor.
+# Limpa o cache para garantir uma imagem final menor
 RUN rm -rf /root/.cache/pip
 
 # Copia o restante da aplicação
 COPY . .
 
 # --- Estágio 2: Final ---
+# Começa de novo com a mesma imagem base limpa
 FROM python:3.13-slim
 WORKDIR /app
 
@@ -32,17 +33,11 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --from=builder /app/app ./app
 COPY --from=builder /app/alembic.ini .
 COPY --from=builder /app/migrations ./migrations
-COPY --from=builder /app/entrypoint.sh .
 
-# 3. Altera a permissão do script (ainda como root)
-RUN chmod +x ./entrypoint.sh
-
-# 4. Troca para o usuário não-root
+# 3. Troca para o usuário não-root
 USER appuser
 
-# 5. Define o script de entrada como o ponto de partida do container.
-#    O script agora contém toda a lógica de inicialização.
-ENTRYPOINT ["./entrypoint.sh"]
-
-# A porta 8000 é exposta, mas o Railway usará a variável $PORT dinamicamente.
+# Expõe a porta para o Railway
 EXPOSE 8000
+
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.app:app --host 0.0.0.0 --port ${PORT:-8000}"]
