@@ -21,7 +21,6 @@
     COPY --from=builder /usr/local/bin /usr/local/bin
     
     COPY --from=builder /app/app ./app
-    COPY --from=builder /app/credentials.json .
     COPY --from=builder /app/alembic.ini .
     COPY --from=builder /app/migrations ./migrations
     
