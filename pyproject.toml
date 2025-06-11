@@ -5,6 +5,7 @@ description = ""
 authors = [{ name = "Gabriel Lima", email = "grtl@ecomp.poli.br" }]
 requires-python = ">=3.13, <4.0"
 readme = "README.md"
+
 dependencies = [
     "fastapi[standard]==0.115.9",
     "sqlalchemy (>=2.0.40,<3.0.0)",
@@ -25,6 +26,15 @@ dependencies = [
     "sentence-transformers>=4.1.0",
     "langchain-huggingface>=0.0.3",
     "langchain-text-splitters>=0.2.0"
+]
+
+# Nova seção para dependências opcionais de desenvolvimento
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.5,<9",
+    "pytest-cov>=6.1.1,<7",
+    "taskipy>=1.14.1,<2",
+    "ruff>=0.11.6,<0.12",
 ]
 
 [build-system]
