@@ -1,4 +1,5 @@
 from typing import AsyncGenerator
+import chromadb
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.orm import Session
@@ -9,6 +10,7 @@ from app.schemas.chat import ChatRequest
 from app.schemas.chat_history import ChatHistoryCreate, ChatHistoryUpdate
 from app.services.chat_history import ChatHistoryService
 from app.services.llm.llm_service import LLMService
+from app.services.rag.rag_service import RagService
 from app.services.users.get_user_by_email_use_case import GetUserByEmailUseCase
 from app.utils.security import get_current_user
 
@@ -73,12 +75,52 @@ async def chat(
 
     user_message = request.message
     llm_message = user_message
+    context = ''
+    source_links = []
+    
+    try:
+        if not user_message.startswith('/desafio'):
+            rag_service = RagService()
+            search_results = rag_service.search(query=user_message)
+            
+            # Extract content and collect unique source links
+            context_parts = []
+            seen_links = set()
+            
+            for result in search_results:
+                context_parts.append(result["content"])
+                
+                # Collect unique Google Drive links
+                metadata = result.get("metadata", {})
+                drive_link = metadata.get("drive_link")
+                source_name = metadata.get("source")
+                
+                if drive_link and drive_link not in seen_links:
+                    seen_links.add(drive_link)
+                    source_links.append({
+                        "name": source_name,
+                        "link": drive_link
+                    })
+            
+            context = '\n'.join(context_parts)
+    finally:
+        chromadb.api.client.SharedSystemClient.clear_system_cache()
+
     if user_message.startswith('/desafio'):
         topic = user_message.replace('/desafio', '').strip()
         if topic:
             llm_message = f'Crie um desafio sobre o seguinte tópico: {topic}'
         else:
             llm_message = 'Crie um desafio com base no contexto da nossa conversa até agora.'
+    elif context:
+        llm_message = f"""
+        Baseado no seguinte contexto, responda a pergunta.
+
+        Contexto:
+        {context}
+
+        Pergunta: {user_message}
+        """
 
     async def stream_response() -> AsyncGenerator[str, None]:
         prompt_messages.append({'role': 'user', 'content': llm_message})
@@ -94,6 +136,19 @@ async def chat(
         async for chunk in response_iterator:
             llm_response_content += chunk
             yield chunk
+
+        # Add source links at the end of the response
+        if source_links and not user_message.startswith('/desafio'):
+            links_section = "\n\n**Fontes consultadas:**\n"
+            for source in source_links:
+                links_section += f"- [{source['name']}]({source['link']})\n"
+            
+            # Yield the links section
+            for char in links_section:
+                yield char
+            
+            # Add links to the response content for storage
+            llm_response_content += links_section
 
         chat_messages.append({'role': 'user', 'content': request.message})
         chat_messages.append(
