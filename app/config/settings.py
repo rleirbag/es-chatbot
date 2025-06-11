@@ -21,3 +21,5 @@ class Settings(BaseSettings):
     OLLAMA_MODEL: str
     OLLAMA_TIMEOUT: int
     FRONTEND_URL: str = 'http://localhost:5173'
+    CHROMA_HOST: str
+    CHROMA_COLLECTION: str = "chatbot_documents"
