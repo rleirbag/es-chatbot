@@ -23,3 +23,4 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = 'http://localhost:5173'
     CHROMA_HOST: str
     CHROMA_COLLECTION: str = "chatbot_documents"
+    GOOGLE_CREDENTIALS_JSON: str = ""
