@@ -75,6 +75,3 @@ run = 'fastapi dev app/app.py'
 pre_test = 'task lint'
 test = 'pytest -s -x --cov=app -vv'
 post_test = 'coverage html'
-
-[tool.uv]
-extra-index-url = "https://download.pytorch.org/whl/cpu"
