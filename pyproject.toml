@@ -28,7 +28,6 @@ dependencies = [
     "langchain-text-splitters>=0.2.0"
 ]
 
-# Nova seção para dependências opcionais de desenvolvimento
 [project.optional-dependencies]
 dev = [
     "pytest>=8.3.5,<9",
@@ -76,3 +75,6 @@ run = 'fastapi dev app/app.py'
 pre_test = 'task lint'
 test = 'pytest -s -x --cov=app -vv'
 post_test = 'coverage html'
+
+[tool.uv]
+extra-index-url = "https://download.pytorch.org/whl/cpu"
