@@ -17,12 +17,12 @@ class RagService:
         )
         
         self.client = chromadb.HttpClient(
-            host=Settings.CHROMA_HOST,
-            port=443, 
+            host=Settings().CHROMA_HOST,
+            port=443,
             ssl=True
         )
         
-        self.collection_name = Settings.CHROMA_COLLECTION
+        self.collection_name = Settings().CHROMA_COLLECTION
         
         try:
             self.collection = self.client.get_or_create_collection(
