@@ -1,0 +1,41 @@
+name: Build and Deploy API to Azure
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  AZURE_WEBAPP_NAME: 'es-chatbot'
+  ACR_NAME: 'eschatbot'
+  IMAGE_NAME: 'api'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 'Checkout do código'
+        uses: actions/checkout@v4
+
+      - name: 'Login na Azure'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: 'Login no ACR'
+        run: az acr login --name ${{ env.ACR_NAME }}
+
+      - name: 'Build e Push da imagem Docker'
+        run: |
+          docker build . -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: 'Deploy no Azure App Service'
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          images: '${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}'
+
+      - name: 'Logout da Azure'
+        if: always()
+        run: az logout
