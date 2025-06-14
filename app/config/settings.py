@@ -20,3 +20,7 @@ class Settings(BaseSettings):
     OLLAMA_API_URL: str
     OLLAMA_MODEL: str
     OLLAMA_TIMEOUT: int
+    FRONTEND_UR: str = 'http://localhost:5173'
+    CHROMA_HOST: str
+    CHROMA_COLLECTION: str = "chatbot_documents"
+    GOOGLE_CREDENTIALS_B64: str = ""

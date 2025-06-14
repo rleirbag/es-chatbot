@@ -16,42 +16,40 @@ class ChatHistoryBase(BaseModel):
 
 
 class ChatHistoryCreate(ChatHistoryBase):
-    user_id: int
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "chat_messages": {
-                    "messages": [
-                        {"role": "user", "content": "Oi ola"},
-                        {"role": "assistant", "content": "opa"}
-                    ]
-                }
-            }
-        }
+    user_id: Optional[int] = None
+    pass
 
 
 class ChatHistoryRead(ChatHistoryBase):
     id: int
-    user_id: int
     created_at: datetime
 
     class Config:
         from_attributes = True
 
 
-class ChatHistoryUpdate(ChatHistoryBase):
+class ChatHistoryUpdate(BaseModel):
     """Schema para atualização de ChatHistory."""
-    pass
+
+    chat_messages: Dict[str, Any] = Field(
+        ...,
+        example={
+            "messages": [
+                {"role": "user", "content": "Oi ola"},
+                {"role": "assistant", "content": "opa"},
+            ]
+        },
+    )
 
 
 class ChatHistory(ChatHistoryBase):
     """Schema completo de ChatHistory com todos os campos."""
+
     id: int
-    user_id: int
     created_at: datetime
     updated_at: datetime | None = None
 
     class Config:
         """Configuração do Pydantic."""
+
         from_attributes = True  # Permite converter objetos SQLAlchemy para Pydantic 

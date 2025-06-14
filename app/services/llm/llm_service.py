@@ -1,15 +1,15 @@
 from abc import ABC, abstractmethod
-from typing import Iterator
+from typing import AsyncIterator
 
-from anthropic import Anthropic
-from ollama import Client
+from anthropic import AsyncAnthropic
+from ollama import AsyncClient
 
 from app.config.settings import Settings
 
 
 class LLMStrategy(ABC):
     @abstractmethod
-    def execute(self, prompt: str) -> Iterator[str]:
+    async def execute(self, prompt: str) -> AsyncIterator[str]:
         pass
 
 
@@ -32,10 +32,10 @@ class ClaudeStrategy(LLMStrategy):
         self.model = Settings().ANTHROPIC_MODEL
         self.system_prompt = Settings().LLM_SYSTEM_PROMPT
 
-    def execute(self, prompt: str) -> Iterator[str]:
-        client = Anthropic(api_key=self.api_key)
+    async def execute(self, prompt: str) -> AsyncIterator[str]:
+        client = AsyncAnthropic(api_key=self.api_key)
 
-        response = client.messages.create(
+        response = await client.messages.create(
             model=self.model,
             messages=[
                 {'role': 'assistant', 'content': self.system_prompt},
@@ -45,9 +45,9 @@ class ClaudeStrategy(LLMStrategy):
             stream=True,
         )
 
-        for chunk in response:
+        async for chunk in response:
             if chunk.type == 'content_block_delta':
-                yield chunk.delta.text  # type: ignore
+                yield chunk.delta.text
 
 
 class OllamaStrategy(LLMStrategy):
@@ -56,17 +56,17 @@ class OllamaStrategy(LLMStrategy):
         self.model = Settings().OLLAMA_MODEL
         self.timeout = Settings().OLLAMA_TIMEOUT
 
-    def execute(self, prompt: str) -> Iterator[str]:
-        client = Client(host=self.api_url)
+    async def execute(self, prompt: str) -> AsyncIterator[str]:
+        client = AsyncClient(host=self.api_url)
         try:
             messages = [
                 {'role': 'system', 'content': Settings().LLM_SYSTEM_PROMPT},
                 {'role': 'user', 'content': prompt},
             ]
-            response = client.chat(
+            response = await client.chat(
                 model=self.model, messages=messages, stream=True
             )
-            for chunk in response:
+            async for chunk in response:
                 yield (
                     chunk['message']['content']
                     if 'message' in chunk
@@ -86,7 +86,8 @@ class LLMService:
         return cls._instance
 
     @staticmethod
-    def execute(prompt: str) -> Iterator[str]:
+    async def execute(prompt: str) -> AsyncIterator[str]:
         strategy = LLMStrategyFactory.get_strategy()
 
-        return strategy.execute(prompt)
+        async for chunk in strategy.execute(prompt):
+            yield chunk

@@ -1,3 +1,6 @@
+import base64
+import json
+
 import requests
 from fastapi import (
     APIRouter,
@@ -58,12 +61,11 @@ async def auth_google(code: str, db: DbSession):
     )
     user_info = user_info.json()
 
-    # Gerar um ID numérico a partir do ID do Google
     google_id = user_info.get('sub')
-    numeric_id = int(google_id[-9:])  # Pega os últimos 9 dígitos do ID do Google
+    numeric_id = int(google_id[-9:])
 
     user = UserCreate(
-        id=str(numeric_id),  # Converte para string pois o schema espera string
+        id=numeric_id,
         name=user_info.get('name'),
         email=user_info.get('email'),
         refresh_token=token_data.get('refresh_token'),
@@ -77,7 +79,7 @@ async def auth_google(code: str, db: DbSession):
             status_code=error.error_code, detail=error.error_message
         )
 
-    return {
+    user_credentials = {
         'access_token': token_data.get('access_token'),
         'refresh_token': token_data.get('refresh_token'),
         'expires_in': token_data.get('expires_in'),
@@ -85,6 +87,16 @@ async def auth_google(code: str, db: DbSession):
         'id_token': token_data.get('id_token'),
         'picture': user_info.get('picture', ''),
     }
+    print(json.dumps(user_credentials, indent=2))
+
+    user_credentials_b64 = base64.b64encode(
+        json.dumps(user_credentials).encode('utf-8')
+    ).decode('utf-8')
+
+    return RedirectResponse(
+        url=f'{Settings().FRONTEND_URL}/google/callback?user={user_credentials_b64}',
+        status_code=302,
+    )
 
 
 # TODO: Implementar refresh token pelo usuário logado

@@ -22,7 +22,6 @@ class CreateChatHistoryUseCase:
                 f'Tentando criar histórico de chat para o usuário: {chat_history_create.user_id}'
             )
 
-            # Criar o objeto ChatHistory com os dados corretos
             chat_history = ChatHistory(
                 user_id=chat_history_create.user_id,
                 chat_messages=chat_history_create.chat_messages

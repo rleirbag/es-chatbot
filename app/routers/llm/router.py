@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Security
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from app.services.llm.llm_service import LLMService
+from app.utils.security import get_current_user
 
 router = APIRouter(tags=['LLM'])
 
@@ -12,7 +13,10 @@ class Prompt(BaseModel):
 
 
 @router.post('/generate')
-async def generate(prompt: Prompt):
+async def generate(
+    prompt: Prompt,
+    user_info: dict = Security(get_current_user),
+):
     try:
 
         async def generate():
