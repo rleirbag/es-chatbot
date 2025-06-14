@@ -24,6 +24,7 @@ target_metadata = Base.metadata
 from app.models.user import *
 from app.models.document import *
 from app.models.chat_history import *
+from app.models.anonymous_question import *
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

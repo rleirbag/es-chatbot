@@ -12,6 +12,7 @@ from app.services.chat_history import ChatHistoryService
 from app.services.llm.llm_service import LLMService
 from app.services.rag.rag_service import RagService
 from app.services.users.get_user_by_email_use_case import GetUserByEmailUseCase
+from app.services.anonymous_questions.anonymous_question_service import AnonymousQuestionService
 from app.utils.security import get_current_user
 
 
@@ -63,6 +64,8 @@ async def chat(
             user_id=user_id, chat_history=chat_history_create
         )
 
+    history_id = history.id
+    
     chat_messages = (
         history.chat_messages.get('messages', [])
         if history.chat_messages
@@ -77,6 +80,19 @@ async def chat(
     llm_message = user_message
     context = ''
     source_links = []
+    
+    # Detecta e salva dúvida anônima
+    try:
+        anonymous_service = AnonymousQuestionService(db)
+        detected_question = anonymous_service.detect_and_save_question(
+            message=user_message,
+            context=""  # Ainda não temos o contexto aqui
+        )
+        if detected_question:
+            print(f"Dúvida anônima salva: {detected_question.topic} - {detected_question.question[:50]}...")
+    except Exception as e:
+        print(f"Erro ao salvar dúvida anônima: {e}")
+        # Não falhamos o chat por causa disso
     
     try:
         if not user_message.startswith('/desafio'):
@@ -158,9 +174,14 @@ async def chat(
         update_data = ChatHistoryUpdate(
             chat_messages={'messages': chat_messages}
         )
-        chat_history_service.update_chat_history(
-            chat_history_id=history.id,
-            chat_history=update_data,
-        )
+        
+        # Cria uma nova instância do serviço com uma nova sessão para evitar problemas de concorrência
+        from app.config.database import SessionLocal
+        with SessionLocal() as new_db:
+            new_chat_history_service = ChatHistoryService(new_db)
+            new_chat_history_service.update_chat_history(
+                chat_history_id=history_id,
+                chat_history=update_data,
+            )
 
     return StreamingResponse(stream_response(), media_type='text/event-stream') 
