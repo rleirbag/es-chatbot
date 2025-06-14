@@ -1,29 +1,27 @@
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Optional
 
-from sqlalchemy import ForeignKey, DateTime, JSON
+from sqlalchemy import ForeignKey, Text, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.config.database import Base
 
-
-class ChatHistory(Base):
-    __tablename__ = 'chat_histories'
+class Question(Base):
+    __tablename__ = 'questions'
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
-    chat_messages: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
+    theme: Mapped[str] = mapped_column(Text, nullable=False)
+    question: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, 
         default=datetime.utcnow, 
         nullable=False
     )
-    updated_at: Mapped[datetime] = mapped_column(
+    updated_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime, 
         default=datetime.utcnow, 
-        onupdate=datetime.utcnow, 
         nullable=False
     )
-    
-    # Relacionamento com o usuário
-    user: Mapped['User'] = relationship('User', back_populates='chat_histories') 
+
+    user: Mapped['User'] = relationship('User', back_populates='question')

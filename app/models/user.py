@@ -38,3 +38,6 @@ class User(Base):
     chat_histories = relationship(
         'ChatHistory', back_populates='user', cascade='all, delete-orphan'
     )
+
+    question = relationship('Question', back_populates='user', cascade='all, delete-orphan'
+                            )
