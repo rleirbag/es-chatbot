@@ -14,7 +14,7 @@ from app.services.anonymous_questions.anonymous_question_service import Anonymou
 from app.services.users.get_user_by_email_use_case import GetUserByEmailUseCase
 from app.utils.security import get_current_user
 
-router = APIRouter()
+router = APIRouter(tags=["Questions"])
 
 
 @router.post(

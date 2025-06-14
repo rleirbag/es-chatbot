@@ -1,5 +1,6 @@
 from typing import AsyncGenerator
 import chromadb
+import time
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.orm import Session
@@ -13,6 +14,7 @@ from app.services.llm.llm_service import LLMService
 from app.services.rag.rag_service import RagService
 from app.services.users.get_user_by_email_use_case import GetUserByEmailUseCase
 from app.services.anonymous_questions.anonymous_question_service import AnonymousQuestionService
+from app.services.chat_statistics.chat_statistics_service import ChatStatisticsService
 from app.utils.security import get_current_user
 
 
@@ -42,6 +44,9 @@ async def chat(
         )
 
     user_id = user.id
+    
+    # Inicia medição de tempo para estatísticas
+    start_time = time.time()
 
     if request.chat_history_id:
         history = chat_history_service.get_chat_history(
@@ -80,6 +85,7 @@ async def chat(
     llm_message = user_message
     context = ''
     source_links = []
+    rag_context_found = False
     
     # Detecta e salva dúvida anônima
     try:
@@ -119,6 +125,7 @@ async def chat(
                     })
             
             context = '\n'.join(context_parts)
+            rag_context_found = len(context_parts) > 0
     finally:
         chromadb.api.client.SharedSystemClient.clear_system_cache()
 
@@ -183,5 +190,23 @@ async def chat(
                 chat_history_id=history_id,
                 chat_history=update_data,
             )
+            
+            # Registra estatísticas da mensagem
+            try:
+                end_time = time.time()
+                response_time_ms = (end_time - start_time) * 1000  # Converte para ms
+                
+                stats_service = ChatStatisticsService(new_db)
+                stats_service.create_message_statistic(
+                    message=user_message,
+                    user_id=user_id,
+                    user_email=user_email,
+                    response_time_ms=response_time_ms,
+                    rag_context_found=rag_context_found,
+                    llm_provider="claude"  # Pode ser configurável no futuro
+                )
+            except Exception as e:
+                print(f"Erro ao registrar estatísticas: {e}")
+                # Não falhamos o chat por causa das estatísticas
 
     return StreamingResponse(stream_response(), media_type='text/event-stream') 
