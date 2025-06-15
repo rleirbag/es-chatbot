@@ -23,3 +23,11 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class UserRoleUpdate(BaseModel):
+    user_id: int
+    role: UserRole
+
+    class Config:
+        from_attributes = True
