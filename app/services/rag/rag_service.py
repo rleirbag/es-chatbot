@@ -18,7 +18,7 @@ class RagService:
         
         self.client = chromadb.HttpClient(
             host=Settings().CHROMA_HOST,
-            port=443,
+            port=8000,
             ssl=True
         )
         
