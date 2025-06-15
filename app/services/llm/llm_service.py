@@ -41,7 +41,7 @@ class ClaudeStrategy(LLMStrategy):
                 {'role': 'assistant', 'content': self.system_prompt},
                 {'role': 'user', 'content': prompt},
             ],
-            max_tokens=1000,
+            max_tokens=3000,
             stream=True,
         )
 
