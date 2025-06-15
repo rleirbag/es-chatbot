@@ -16,11 +16,25 @@ class RagService:
             model_name='all-MiniLM-L6-v2'
         )
         
+        # Auto-detect SSL based on host protocol
+        chroma_host = Settings().CHROMA_HOST
+        use_ssl = chroma_host.startswith('https://')
+        
+        # Clean host URL (remove protocol if present)
+        if chroma_host.startswith('http://'):
+            clean_host = chroma_host.replace('http://', '')
+        elif chroma_host.startswith('https://'):
+            clean_host = chroma_host.replace('https://', '')
+        else:
+            clean_host = chroma_host
+        
         self.client = chromadb.HttpClient(
-            host=Settings().CHROMA_HOST,
+            host=clean_host,
             port=8000,
-            ssl=True
+            ssl=use_ssl
         )
+        
+        logger.info(f"ChromaDB client initialized with host: {clean_host}, SSL: {use_ssl}")
         
         self.collection_name = Settings().CHROMA_COLLECTION
         
